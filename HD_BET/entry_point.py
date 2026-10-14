@@ -42,7 +42,8 @@ def main():
 
     args = parser.parse_args()
 
-    maybe_download_parameters()
+    # Weights are expected to be present already (provided via weights_download_path).
+    # maybe_download_parameters()
 
     predictor = get_hdbet_predictor(
         use_tta=not args.disable_tta,

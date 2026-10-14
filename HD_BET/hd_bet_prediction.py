@@ -65,17 +65,16 @@ def hdbet_predict(
         output_files = [join(os.path.curdir, output_file_or_folder)]
         brain_mask_files = [join(os.path.curdir, output_file_or_folder[:-7] + '_bet.nii.gz')]
 
-    # we first just predict the brain masks using the standard nnU-Net inference
-    predictor.predict_from_files(
+    # we first just predict the brain masks using the standard nnU-Net inference.
+    # Use the sequential (no-multiprocessing) path to avoid shipping result
+    # tensors through shared memory (/dev/shm), which causes a SIGBUS / "Bus
+    # error (core dumped)" when /dev/shm is too small (common in containers).
+    predictor.predict_from_files_sequential(
         [[i] for i in input_files],
         brain_mask_files,
         save_probabilities=False,
         overwrite=True,
-        num_processes_preprocessing=4,
-        num_processes_segmentation_export=8,
-        folder_with_segs_from_prev_stage=None,
-        num_parts=1,
-        part_id=0
+        folder_with_segs_from_prev_stage=None
     )
     # remove unnecessary json files
     os.remove(join(os.path.dirname(brain_mask_files[0]), 'dataset.json'))
